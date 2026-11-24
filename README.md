@@ -6,6 +6,7 @@ A TypeScript-first, backend-independent image preparation library for collectibl
 
 - Workspace-based monorepo with `@cardvault/image-engine` core package.
 - Validated packed RGB/RGBA/grayscale `ImageBuffer` with defensive copies and pixel safety bounds.
+- Aspect-ratio-explicit bilinear image resizing as a standalone operation and configurable pipeline stage, with output safety limits.
 - Composable asynchronous processing pipeline with stage enable/disable, cancellation, execution timings, result statuses, and configurable input limits.
 - Deterministic grayscale and percentile-based linear contrast stages, plus dependency-free image quality indicators.
 - Configurable card profile geometry types (including the standard 0.714 trading-card profile).
@@ -24,6 +25,8 @@ A TypeScript-first, backend-independent image preparation library for collectibl
 - Pipeline introspection, per-stage start/completion progress callbacks, dimension/backend metadata, and cancellation handling.
 - Backend interface and selector with truthful AUTO/CPU fallback; requested but unimplemented WASM/WebGPU backends return CPU with an explicit warning.
 - Benchmark helper with configurable warmups, cancellation, average/median/P95/P99/min/max latency, and throughput; `benchmarkPipeline` runs full pipelines repeatedly and treats failed iterations as errors.
+- Bounded `processBatch` API with configurable concurrency/job limits, cancellation propagation, indexed progress, and input-order results for Node or browser consumers.
+- Pipeline input/output pixel and elapsed-time resource limits with explicit processing failures on exceeded limits (time budgets are checked between stage execution boundaries).
 
 Detection, perspective correction, decoding/encoding adapters, browser workers, React Image Lab, WASM, and GPU backends are future roadmap items; AUTO currently safely falls back to CPU.
 
@@ -51,4 +54,8 @@ npm test
 
 The React/Vite demonstration is in `packages/react-demo`. Start it with `npm run dev`; it provides image upload/drop, original and pipeline-stage previews, capture-quality scores, and progress feedback while consuming the shared core package. Image decoding and pixel readback happen in the UI; CPU-heavy quality analysis and pipeline processing run in a dedicated Web Worker.
 
-See the design specification and roadmap for intended future capabilities. This package is an image-processing layer, not an OCR or card-identification system.
+See the design specification and roadmap for intended future capabilities. The core package is published as ESM for Node.js 18+ and browser bundlers; it accepts decoded packed pixel buffers and deliberately does not bundle an opinionated image-codec dependency. `npm test` runs the core suite and a Node ESM package smoke test.
+
+For a stable model-agnostic handoff, `toStandardizedCardImage(result)` creates a versioned `StandardizedCardImage` containing aligned image pixels, dimensions/format, available grayscale/binary representations, geometry when provided, quality, and warnings. It rejects unsuccessful pipeline results and has no dependency on any vision or ML implementation.
+
+This package is an image-processing layer, not an OCR or card-identification system.
