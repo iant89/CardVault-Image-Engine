@@ -19,6 +19,7 @@ A TypeScript-first, backend-independent image preparation library for collectibl
 - Sobel gradient edge detection with configurable threshold and a pipeline-stage adapter.
 - Binary square-kernel dilation, erosion, opening, and closing for edge-map cleanup.
 - Connected-component card candidate extraction and ranking by profile aspect ratio, area, and rectangularity, with convex-hull quadrilateral corner estimates, bounds, and rejection reasons; a pipeline stage exposes all candidates and warns on multiple cards.
+- Heuristic `AutomaticCardAlignmentStage` composing Sobel edges, morphology, candidate ranking, and perspective warp for high-contrast card silhouettes.
 - Harris-response corner refinement around candidate corner estimates.
 - A pipeline-compatible perspective-warp stage that consumes supplied corners and a target size or card profile.
 - Quality reports with normalized blur/sharpness, exposure, contrast, glare, and overall scores, plus configurable capture warnings.
@@ -29,15 +30,16 @@ A TypeScript-first, backend-independent image preparation library for collectibl
 - Bounded `processBatch` API with configurable concurrency/job limits, cancellation propagation, indexed progress, and input-order results for Node or browser consumers.
 - Pipeline input/output pixel and elapsed-time resource limits with explicit processing failures on exceeded limits (time budgets are checked between stage execution boundaries).
 
-Detection, perspective correction, decoding/encoding adapters, browser workers, React Image Lab, WASM, and GPU backends are future roadmap items; AUTO currently safely falls back to CPU.
+The automatic alignment stage is a classical-vision heuristic, not a robust learned detector; results depend on a visible, sufficiently high-contrast card boundary and should be validated against a representative fixture corpus. Browser/Node-specific codecs are intentionally supplied by adapters. WASM and GPU backends remain future work; AUTO safely falls back to CPU.
 
 ## Quick start
 
 ```ts
-import { ImageBuffer, ImagePipeline, GrayscaleStage } from '@cardvault/image-engine';
+import { ImageBuffer, ImageEngine, GrayscaleStage } from '@cardvault/image-engine';
 
 const image = new ImageBuffer(width, height, rgbBytes, 'RGB');
-const result = await new ImagePipeline([new GrayscaleStage()]).process(image);
+const engine = new ImageEngine({ stages: [new GrayscaleStage()] });
+const result = await engine.process(image);
 if (!result.success) throw new Error(result.errors.join('; '));
 ```
 
