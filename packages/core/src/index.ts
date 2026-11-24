@@ -1,6 +1,8 @@
 export * from './image/ImageBuffer.js';
 export * from './image/resize.js';
+export * from './image/ImageCodec.js';
 export * from './geometry/types.js';
+export * from './geometry/profiles.js';
 export * from './geometry/perspective.js';
 export * from './core/types.js';
 export * from './core/ImagePipeline.js';
@@ -21,5 +23,6 @@ export * from './backends/BackendSelector.js';
 export * from './alignment/edges.js';
 export * from './alignment/morphology.js';
 export * from './alignment/cardDetector.js';
+export * from './alignment/CardDetectionStage.js';
 export * from './alignment/corners.js';
 export * from './alignment/warpStage.js';

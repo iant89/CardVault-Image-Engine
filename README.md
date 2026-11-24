@@ -7,9 +7,10 @@ A TypeScript-first, backend-independent image preparation library for collectibl
 - Workspace-based monorepo with `@cardvault/image-engine` core package.
 - Validated packed RGB/RGBA/grayscale `ImageBuffer` with defensive copies and pixel safety bounds.
 - Aspect-ratio-explicit bilinear image resizing as a standalone operation and configurable pipeline stage, with output safety limits.
+- Pluggable image codec interfaces/registry with metadata preflight, encoded-size and pixel-count limits, and decoded-dimension consistency checks; the core includes no platform-specific codec.
 - Composable asynchronous processing pipeline with stage enable/disable, cancellation, execution timings, result statuses, and configurable input limits.
 - Deterministic grayscale and percentile-based linear contrast stages, plus dependency-free image quality indicators.
-- Configurable card profile geometry types (including the standard 0.714 trading-card profile).
+- Configurable card profile geometry types and validated profile helpers for standard, Pokémon, Magic, Yu-Gi-Oh!, and sports-card proportions.
 - Four-corner ordering, 3×3 homography calculation, and bilinear inverse-mapped perspective warping with output resource guards.
 - Non-destructive Otsu, fixed global, and integral-image adaptive-mean binarization; color input is retained by the calling pipeline and threshold output is a separate grayscale image.
 - Configurable local-illumination shadow correction using integral-image estimation, with alpha-channel preservation.
@@ -17,7 +18,7 @@ A TypeScript-first, backend-independent image preparation library for collectibl
 - Local Niblack and Sauvola adaptive thresholding using integral-image local statistics.
 - Sobel gradient edge detection with configurable threshold and a pipeline-stage adapter.
 - Binary square-kernel dilation, erosion, opening, and closing for edge-map cleanup.
-- Connected-component card candidate extraction and ranking by profile aspect ratio, area, and rectangularity, with per-candidate bounds and rejection reasons.
+- Connected-component card candidate extraction and ranking by profile aspect ratio, area, and rectangularity, with convex-hull quadrilateral corner estimates, bounds, and rejection reasons; a pipeline stage exposes all candidates and warns on multiple cards.
 - Harris-response corner refinement around candidate corner estimates.
 - A pipeline-compatible perspective-warp stage that consumes supplied corners and a target size or card profile.
 - Quality reports with normalized blur/sharpness, exposure, contrast, glare, and overall scores, plus configurable capture warnings.
