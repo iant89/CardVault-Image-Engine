@@ -4,5 +4,5 @@ const input = new ImageBuffer(16, 16, new Uint8Array(16 * 16 * 3).fill(127), 'RG
 const result = await new ImagePipeline([new GrayscaleStage()]).process(input);
 assert.equal(result.success, true);
 assert.equal(result.alignedColor.format, 'GRAY');
-assert.equal(result.metrics.backend, 'CPU');
+assert.equal(result.metrics.backend, 'WASM');
 console.log('Node ESM package smoke test passed.');

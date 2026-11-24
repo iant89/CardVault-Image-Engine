@@ -49,14 +49,15 @@ export class ImagePipeline {
         if (!(output instanceof ImageBuffer)) throw new TypeError(`Stage ${stage.name} returned an invalid image`);
         if (output.width * output.height > maxOutputPixels) return { ...this.failure(original, 'IMAGE_TOO_LARGE', `Stage ${stage.name} output exceeds the configured pixel limit.`, started), stages: records };
         image = output; const durationMs = now() - t;
-        records.push({ name: stage.name, durationMs, input: before, output, metadata: { backend: 'CPU', inputWidth: before.width, inputHeight: before.height, outputWidth: output.width, outputHeight: output.height } });
+        records.push({ name: stage.name, durationMs, input: before, output, metadata: { backend: selection.backend.lastStageBackend ?? selection.backend.kind, inputWidth: before.width, inputHeight: before.height, outputWidth: output.width, outputHeight: output.height } });
         runOptions.onProgress?.({ stage: stage.name, stageIndex: index, stageCount: this.stages.length, phase: 'complete', elapsedMs: now() - started });
       }
       const candidates = context.metadata['cardCandidates'] as ProcessingResult['candidates'];
       const alignmentStatus = context.metadata['alignmentStatus'] as ProcessingResult['status'] | undefined;
       if (alignmentStatus) { const failed = this.failure(original, alignmentStatus, alignmentStatus === 'CARD_NOT_FOUND' ? 'No card candidate was found.' : 'Best card candidate confidence is below the configured threshold.', started); failed.stages = records; if (candidates) failed.candidates = candidates; return failed; }
-      const warnings = [...(selection.warning ? [selection.warning] : []), ...(candidates && candidates.length > 1 ? ['MULTIPLE_CARDS: multiple card candidates were detected'] : [])];
-      const result: ProcessingResult = { success: true, status: 'SUCCESS', original, alignedColor: image, enhancedColor: image, stages: records, quality: analyzeQuality(image), metrics: { totalTimeMs: now() - started, backend: selection.backend.kind }, warnings, errors: [] };
+      const fallbackReason = (selection.backend as typeof selection.backend & { lastFallbackReason?: string }).lastFallbackReason;
+      const warnings = [...(selection.warning ? [selection.warning] : []), ...(fallbackReason ? [`BACKEND_FALLBACK: ${fallbackReason}`] : []), ...(candidates && candidates.length > 1 ? ['MULTIPLE_CARDS: multiple card candidates were detected'] : [])];
+      const result: ProcessingResult = { success: true, status: 'SUCCESS', original, alignedColor: image, enhancedColor: image, stages: records, quality: analyzeQuality(image), metrics: { totalTimeMs: now() - started, backend: Array.from(new Set(records.map(record => String(record.metadata?.backend)))).join('+') || 'CPU' }, warnings, errors: [] };
       if (candidates) result.candidates = candidates;
       const geometry = context.metadata['cardGeometry'] as ProcessingResult['geometry']; if (geometry) result.geometry = geometry;
       return result;
