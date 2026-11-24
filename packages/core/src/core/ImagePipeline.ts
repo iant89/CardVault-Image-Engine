@@ -52,7 +52,11 @@ export class ImagePipeline {
         records.push({ name: stage.name, durationMs, input: before, output, metadata: { backend: 'CPU', inputWidth: before.width, inputHeight: before.height, outputWidth: output.width, outputHeight: output.height } });
         runOptions.onProgress?.({ stage: stage.name, stageIndex: index, stageCount: this.stages.length, phase: 'complete', elapsedMs: now() - started });
       }
-      return { success: true, status: 'SUCCESS', original, alignedColor: image, enhancedColor: image, stages: records, quality: analyzeQuality(image), metrics: { totalTimeMs: now() - started, backend: selection.backend.kind }, warnings: selection.warning ? [selection.warning] : [], errors: [] };
+      const candidates = context.metadata['cardCandidates'] as ProcessingResult['candidates'];
+      const warnings = [...(selection.warning ? [selection.warning] : []), ...(candidates && candidates.length > 1 ? ['MULTIPLE_CARDS: multiple card candidates were detected'] : [])];
+      const result: ProcessingResult = { success: true, status: 'SUCCESS', original, alignedColor: image, enhancedColor: image, stages: records, quality: analyzeQuality(image), metrics: { totalTimeMs: now() - started, backend: selection.backend.kind }, warnings, errors: [] };
+      if (candidates) result.candidates = candidates;
+      return result;
     } catch (error) {
       return { ...this.failure(original, 'PROCESSING_ERROR', error instanceof Error ? error.message : String(error), started), stages: records };
     }
