@@ -27,7 +27,7 @@ A TypeScript-first, backend-independent image preparation library for collectibl
 - Pipeline introspection, per-stage start/completion progress callbacks, dimension/backend metadata, and cancellation handling.
 - Backend interface and selector with a WebAssembly and WebGPU grayscale kernel; other stages safely execute on CPU. AUTO prefers WebGPU, then WASM, then CPU; explicit unavailable backends warn on CPU fallback.
 - Benchmark helper with configurable warmups, cancellation, average/median/P95/P99/min/max latency, and throughput; `benchmarkPipeline` runs full pipelines repeatedly and treats failed iterations as errors.
-- Deterministic synthetic golden-pipeline SHA-256 regression test and generated skewed-card/shadow scenes; broader real-photo fixture corpus and physical GPU benchmark verification remain environment/data-dependent.
+- Deterministic synthetic golden-pipeline SHA-256 regression test plus generated angle/lighting/shadow/background alignment matrix with recorded detection-rate and per-case corner-error baselines; broader real-photo fixture corpus and physical GPU benchmark verification remain environment/data-dependent.
 - Bounded `processBatch` API with configurable concurrency/job limits, cancellation propagation, indexed progress, and input-order results for Node or browser consumers.
 - Pipeline input/output pixel and elapsed-time resource limits with explicit processing failures on exceeded limits (time budgets are checked between stage execution boundaries).
 
