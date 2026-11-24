@@ -53,9 +53,12 @@ export class ImagePipeline {
         runOptions.onProgress?.({ stage: stage.name, stageIndex: index, stageCount: this.stages.length, phase: 'complete', elapsedMs: now() - started });
       }
       const candidates = context.metadata['cardCandidates'] as ProcessingResult['candidates'];
+      const alignmentStatus = context.metadata['alignmentStatus'] as ProcessingResult['status'] | undefined;
+      if (alignmentStatus) { const failed = this.failure(original, alignmentStatus, alignmentStatus === 'CARD_NOT_FOUND' ? 'No card candidate was found.' : 'Best card candidate confidence is below the configured threshold.', started); failed.stages = records; if (candidates) failed.candidates = candidates; return failed; }
       const warnings = [...(selection.warning ? [selection.warning] : []), ...(candidates && candidates.length > 1 ? ['MULTIPLE_CARDS: multiple card candidates were detected'] : [])];
       const result: ProcessingResult = { success: true, status: 'SUCCESS', original, alignedColor: image, enhancedColor: image, stages: records, quality: analyzeQuality(image), metrics: { totalTimeMs: now() - started, backend: selection.backend.kind }, warnings, errors: [] };
       if (candidates) result.candidates = candidates;
+      const geometry = context.metadata['cardGeometry'] as ProcessingResult['geometry']; if (geometry) result.geometry = geometry;
       return result;
     } catch (error) {
       return { ...this.failure(original, 'PROCESSING_ERROR', error instanceof Error ? error.message : String(error), started), stages: records };
