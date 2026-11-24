@@ -7,7 +7,7 @@ A TypeScript-first, backend-independent image preparation library for collectibl
 - Workspace-based monorepo with `@cardvault/image-engine` core package.
 - Validated packed RGB/RGBA/grayscale `ImageBuffer` with defensive copies and pixel safety bounds.
 - Aspect-ratio-explicit bilinear image resizing as a standalone operation and configurable pipeline stage, with output safety limits.
-- Pluggable image codec interfaces/registry with metadata preflight, encoded-size and pixel-count limits, and decoded-dimension consistency checks; the core includes no platform-specific codec.
+- Pluggable image codec interfaces/registry with metadata preflight, encoded-size and pixel-count limits, and decoded-dimension consistency checks; the core includes no platform-specific codec. An optional `@cardvault/image-engine-node` workspace package provides PNG (pngjs) and JPEG (jpeg-js) decode/encode adapters.
 - Composable asynchronous processing pipeline with stage enable/disable, cancellation, execution timings, result statuses, and configurable input limits.
 - Deterministic grayscale and percentile-based linear contrast stages, plus dependency-free image quality indicators.
 - Configurable card profile geometry types and validated profile helpers for standard, Pokémon, Magic, Yu-Gi-Oh!, and sports-card proportions.
@@ -25,12 +25,13 @@ A TypeScript-first, backend-independent image preparation library for collectibl
 - Quality reports with normalized blur/sharpness, exposure, contrast, glare, and overall scores, plus configurable capture warnings.
 - Pipeline-stage adapters for CLAHE and Otsu, adaptive mean, Niblack, and Sauvola thresholding, composable with enabled/disabled stages.
 - Pipeline introspection, per-stage start/completion progress callbacks, dimension/backend metadata, and cancellation handling.
-- Backend interface and selector with truthful AUTO/CPU fallback; requested but unimplemented WASM/WebGPU backends return CPU with an explicit warning.
+- Backend interface and selector with a WebAssembly and WebGPU grayscale kernel; other stages safely execute on CPU. AUTO prefers WebGPU, then WASM, then CPU; explicit unavailable backends warn on CPU fallback.
 - Benchmark helper with configurable warmups, cancellation, average/median/P95/P99/min/max latency, and throughput; `benchmarkPipeline` runs full pipelines repeatedly and treats failed iterations as errors.
+- Deterministic synthetic golden-pipeline SHA-256 regression test and generated skewed-card/shadow scenes; broader real-photo fixture corpus and physical GPU benchmark verification remain environment/data-dependent.
 - Bounded `processBatch` API with configurable concurrency/job limits, cancellation propagation, indexed progress, and input-order results for Node or browser consumers.
 - Pipeline input/output pixel and elapsed-time resource limits with explicit processing failures on exceeded limits (time budgets are checked between stage execution boundaries).
 
-The automatic alignment stage is a classical-vision heuristic, not a robust learned detector; results depend on a visible, sufficiently high-contrast card boundary and should be validated against a representative fixture corpus. Browser/Node-specific codecs are intentionally supplied by adapters. WASM and GPU backends remain future work; AUTO safely falls back to CPU.
+The automatic alignment stage is a classical-vision heuristic, not a robust learned detector; results depend on a visible, sufficiently high-contrast card boundary and should be validated against a representative fixture corpus. Browser/Node-specific codecs are intentionally supplied by adapters. Current WASM/WebGPU kernels accelerate grayscale only; all remaining stages run on CPU.
 
 ## Quick start
 
@@ -55,7 +56,7 @@ npm test
 
 ## CardVault Image Lab
 
-The React/Vite demonstration is in `packages/react-demo`. Start it with `npm run dev`; it provides image upload/drop, original and pipeline-stage previews, capture-quality scores, and progress feedback while consuming the shared core package. Image decoding and pixel readback happen in the UI; CPU-heavy quality analysis and pipeline processing run in a dedicated Web Worker.
+The React/Vite demonstration is in `packages/react-demo`. Start it with `npm run dev`; it provides image upload/drop, original and pipeline-stage previews, zoom/pan and before/after comparison, capture-quality scores, editable contrast/threshold/window/backend controls, configuration and code export, and a pipeline benchmark. It consumes the shared core package. Image decoding and pixel readback happen in the UI; quality analysis and pipeline processing run in a dedicated Web Worker.
 
 See the design specification and roadmap for intended future capabilities. The core package is published as ESM for Node.js 18+ and browser bundlers; it accepts decoded packed pixel buffers and deliberately does not bundle an opinionated image-codec dependency. `npm test` runs the core suite and a Node ESM package smoke test.
 

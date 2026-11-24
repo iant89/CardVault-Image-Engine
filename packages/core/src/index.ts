@@ -20,6 +20,8 @@ export * from './benchmark/benchmark.js';
 export * from './benchmark/benchmarkPipeline.js';
 export * from './backends/ProcessingBackend.js';
 export * from './backends/CpuBackend.js';
+export * from './backends/WasmBackend.js';
+export * from './backends/WebGpuBackend.js';
 export * from './backends/BackendSelector.js';
 export * from './alignment/edges.js';
 export * from './alignment/morphology.js';

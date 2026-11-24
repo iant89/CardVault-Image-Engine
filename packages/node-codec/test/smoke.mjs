@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {ImageBuffer}from'@cardvault/image-engine';
+import {decodeImage,ImageCodecRegistry}from'@cardvault/image-engine';
+import {NodeImageCodec}from'../dist/index.js';
+const codec=new NodeImageCodec(),registry=new ImageCodecRegistry().register({format:'PNG',decoder:codec,encoder:codec}).register({format:'JPEG',decoder:codec,encoder:codec});
+const input=new ImageBuffer(2,2,new Uint8Array([255,0,0,0,255,0,0,0,255,100,100,100]),'RGB');
+assert.throws(()=>codec.encode(input,'PNG',{quality:101}),/quality/);
+const encoded=codec.encode(input,'PNG');
+const decoded=await decodeImage(encoded,'PNG',registry);
+assert.equal(decoded.image.format,'RGBA');
+assert.deepEqual([...decoded.image.getPixel(0,0)],[255,0,0,255]);
+assert.equal(decoded.metadata.width,2);
+const jpegBytes=codec.encode(input,'JPEG',{quality:100});const jpegDecoded=await decodeImage(jpegBytes,'JPEG',registry);assert.equal(jpegDecoded.metadata.format,'JPEG');assert.equal(jpegDecoded.image.width,2);assert.equal(jpegDecoded.image.height,2);
+await assert.rejects(decodeImage(encoded,'PNG',registry,{maxFileSizeBytes:4}),/file exceeds/);
+console.log('Node PNG/JPEG codec round-trip smoke test passed.');
